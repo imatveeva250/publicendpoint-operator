@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py .
 
-RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin operator
+RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin app
 USER 10001
 
 EXPOSE 8080
