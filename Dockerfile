@@ -13,5 +13,5 @@ COPY main.py .
 RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin app
 USER 10001
 
-EXPOSE 8080
+EXPOSE 8000 8080
 CMD ["kopf", "run", "--standalone", "--all-namespaces", "--liveness=http://0.0.0.0:8080/healthz", "main.py"]
