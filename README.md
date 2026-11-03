@@ -81,7 +81,7 @@ pip install -r requirements.txt
 kopf run --standalone --all-namespaces main.py
 ```
 
-It uses the users' kubeconfig, so it acts with these permissions, not the operator's. Stop
+It uses the user's kubeconfig, so it acts with these permissions, not the operator's. Stop
 the in-cluster copy first, or two operators will handle the same objects. In pi-cluster that
 means suspending the `infrastructure-controllers` Kustomization and scaling the Deployment to
 0; otherwise Flux scales it straight back up.
