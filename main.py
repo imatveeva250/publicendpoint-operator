@@ -1,10 +1,13 @@
 """PublicEndpoint operator: checks public HTTPS URLs and records the result in status."""
 
+import dataclasses
 import datetime
 import logging
+import os
 import time
 import urllib.error
 import urllib.request
+from typing import Any
 
 import kopf
 from prometheus_client import Gauge, start_http_server
@@ -43,7 +46,25 @@ def configure(settings: kopf.OperatorSettings, **_):
     settings.persistence.diffbase_storage = kopf.AnnotationsDiffBaseStorage(prefix=ANNOTATION_PREFIX)
     # Only post Kubernetes Events for problems, not for every successful check.
     settings.posting.level = logging.WARNING
+    # Retry failed API calls for about 9 minutes before giving up (default is about
+    # 1 minute). On 2026-11-11 a CoreDNS outage outlasted the default, and the timers
+    # stopped until the pod was restarted.
+    settings.networking.error_backoffs = [1, 2, 5, 10, 20, 30, 60, 60, 60, 60, 60, 60, 60, 60]
     start_http_server(METRICS_PORT)
+
+
+# Talk to the API server by its ClusterIP instead of kubernetes.default.svc, so
+# the operator keeps working when CoreDNS is down (2026-11-11).
+@kopf.on.login()
+def login_fn(**kwargs: Any) -> kopf.ConnectionInfo | None:
+    info = kopf.login_with_service_account(**kwargs)
+
+    if info is None:
+        return None
+
+    host = os.environ["KUBERNETES_SERVICE_HOST"]
+    port = os.environ["KUBERNETES_SERVICE_PORT"]
+    return dataclasses.replace(info, server=f"https://{host}:{port}")
 
 
 def now_utc() -> datetime.datetime:
