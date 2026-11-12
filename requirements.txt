@@ -1,2 +1,2 @@
-kopf==1.45.1
+kopf==1.45.2
 prometheus-client==0.26.0
